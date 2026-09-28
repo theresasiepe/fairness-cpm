@@ -1,0 +1,85 @@
+---
+title: "Prediction Simulation"
+author: "Theresa Siepe"
+date: "2026-09-28"
+output: html_document
+---
+
+# Logistic Regression 
+
+```{r}
+balanced_dt <- load("~/Documents/GitHub/Fairness/fairness-cpm/balanced.RData")
+
+logreg <- glm(Event ~ Group + Predictor, family = binomial, data = balanced_dt)
+
+summary(logreg)
+```
+
+## Visualization of the group distributions
+
+```{r}
+pred_logreg <- predict(logreg, type = "response")
+
+group0 <- pred_logreg[balanced_dt$Group == 0]
+group1 <- pred_logreg[balanced_dt$Group == 1]
+
+pred_logreg <- as.data.frame(cbind(group0, group1))
+```
+
+# Random forest 
+
+```{r}
+rf <- randomForest(Event ~ Group + Predictor,  data = balanced_dt)
+
+pred_rf <- predict(rf)
+
+group0 <- pred_rf[balanced_dt$Group == 0]
+group1 <- pred_rf[balanced_dt$Group == 1]
+
+pred_rf <- as.data.frame(cbind(group0, group1))
+```
+
+## Visualize 
+
+```{r}
+# long data format for predictions
+
+pred_logreg_long <- pred_logreg |>
+  pivot_longer(cols = everything(),       
+               names_to = "name",
+               values_to = "prediction")
+
+pred_rf_long <- pred_rf |>
+  pivot_longer(cols = everything(),       
+               names_to = "name",
+               values_to = "prediction")
+
+plot_logreg <- pred_logreg_long |> 
+  mutate(myaxis = paste0(name)) |>
+  ggplot(aes(x = myaxis, y = prediction, fill = name, alpha = 0.3)) +
+    geom_violin(width = 1.4) +
+    geom_boxplot(width = 0.1, color = "azure1", alpha = 0.2) +
+    annotate(
+      "text",
+      x = 1.5,
+      y = Inf,
+      label = paste0(
+        "Event fraction Group 0: 0.5",
+        "\nEvent fraction Group 1: 0.5",
+        "\nSize of Group 0: 25",
+        "\nSize of Group 1: 25"
+      ),
+      vjust = 1.2,
+      hjust = 0.5,
+      size = 3.5
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position = "none",
+      plot.title = element_text(size = 15)
+    ) +
+    ggtitle("Predictions of Group 0 vs. Group 1 using log reg") +
+    xlab("")
+
+```
+
