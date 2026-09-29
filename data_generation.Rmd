@@ -60,17 +60,3 @@ training_dg <- function(N = 50, group_distribution = 0.5, ev1 =0.25, ev2=0.25, s
 
 ```
 
-
-# Save training data objects 
-
-```{r}
-balanced_dt <- training_dg()
-saveRDS(balanced_dt, "balanced.RData")
-
-imbalanced_dt <- training_dg(group_distribution = 0.3)
-saveRDS(imbalanced_dt, "imbalanced.RData")
-
-strong_imbalanced_dt <- training_dg(group_distribution = 0.1)
-saveRDS(strong_imbalanced_dt, "str_imbalanced.RData")
-```
-
